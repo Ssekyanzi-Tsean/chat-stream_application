@@ -1,4 +1,8 @@
+from confluent_kafka import Producer
 import argparse
+from confluent_kafka import Consumer, KafkaException
+from faker import Faker
+from random import randint
 
 parser = argparse.ArgumentParser(
     prog='Chatapp', description='Message Application')
@@ -16,3 +20,24 @@ receiver.add_argument('--group', help='The group to receive from')
 receiver.add_argument(
     '--start', help='choose either "latest" or "earliest to select the messages to receive"')
 args = parser.parse_args()
+
+
+def run_producer(serverName, channelName):
+    """The producer Function """
+    p = Producer({'bootstrap.servers': serverName,
+                  'acks': '-1', 'partitioner': 'consistent_random', 'batch.num.messages': '100',
+                  'linger.ms': '3000'})
+
+    #msg_value = args.send
+    for i in range(0, 100):
+        msg_value = {'id': randint(0, 100), 'name': Faker('en_US').name()}
+    while True:
+        try:
+            # p.poll(timeout=0)
+            p.produce(topic=channelName, value=str(msg_value),
+                      on_delivery=delivery_report)
+            break
+        except BufferError as buffer_error:
+            print(f"{buffer_error} :: waiting until the Queue gets some free space")
+    p.flush()
+    return msg_value
