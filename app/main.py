@@ -41,3 +41,12 @@ def run_producer(serverName, channelName):
             print(f"{buffer_error} :: waiting until the Queue gets some free space")
     p.flush()
     return msg_value
+
+
+def delivery_report(err, msg):
+    if err:
+        print(f"Message delivery failed : {str(err)}")
+    else:
+        print(
+            f"Message is delivered to the partition {msg.partition()}; Offset - {msg.offset()}")
+        print(f"{msg.value()}")
