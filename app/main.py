@@ -45,8 +45,32 @@ def run_producer(serverName, channelName):
 
 def delivery_report(err, msg):
     if err:
-        print(f"Message delivery failed : {str(err)}")
+        return(f"Message delivery failed : {str(err)}")
     else:
-        print(
+        return(
             f"Message is delivered to the partition {msg.partition()}; Offset - {msg.offset()}")
         print(f"{msg.value()}")
+
+
+def run_consumer(severName, groupId, offset, channelName):
+    """The Consumer Function"""
+    c = Consumer({'bootstrap.servers': severName,
+                  'group.id': groupId,
+                  'auto.offset.reset': offset})
+    c.subscribe([channelName])
+    try:
+        while True:
+            msg = c.poll(timeout=1.0)
+
+            if msg is None:
+                continue
+            if msg.error():
+                raise KafkaException(msg.error())
+            else:
+                print(msg.value())
+
+    except KeyboardInterrupt:
+        print("Aborted by user")
+    finally:
+        c.close()
+    return (msg.value)
