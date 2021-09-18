@@ -74,6 +74,7 @@ def run_consumer(severName, groupId, offset, channelName):
             msg = c.poll(timeout=1.0)
 
             if msg is None:
+                print('No New Messages')
                 continue
             if msg.error():
                 raise KafkaException(msg.error())
