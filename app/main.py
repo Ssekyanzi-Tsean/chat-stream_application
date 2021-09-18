@@ -1,25 +1,35 @@
-from confluent_kafka import Producer
+from .producer import Producer
 import argparse
 from confluent_kafka import Consumer, KafkaException
 from faker import Faker
 from random import randint
 
-parser = argparse.ArgumentParser(
-    prog='Chatapp', description='Message Application')
-sender = parser.add_argument_group(
-    'sending', 'The following flags send your message')
-sender.add_argument('--send', help='insert your message here', nargs='+')
-sender.add_argument(
-    '--server', help='select server to send messages through', nargs='?')
-sender.add_argument(
-    '--channel', help='select the topic name to send messages to', nargs='?')
-receiver = parser.add_argument_group(
-    'receiving', 'The following flags receive messages')
-receiver.add_argument('receive', help='receiver flag', nargs='?')
-receiver.add_argument('--group', help='The group to receive from')
-receiver.add_argument(
-    '--start', help='choose either "latest" or "earliest to select the messages to receive"')
-args = parser.parse_args()
+
+def parse_arguments():
+    parser = argparse.ArgumentParser(
+        prog='Chatapp', description='Message Application')
+    sender = parser.add_argument_group(
+        'sending', 'The following flags send your message')
+    sender.add_argument('--send', help='insert your message here', nargs='+')
+    sender.add_argument(
+        '--server', help='select server to send messages through', nargs='?')
+    sender.add_argument(
+        '--channel', help='select the topic name to send messages to', nargs='?')
+    receiver = parser.add_argument_group(
+        'receiving', 'The following flags receive messages')
+    receiver.add_argument('receive', help='receiver flag', nargs='?')
+    receiver.add_argument('--group', help='The group to receive from')
+    receiver.add_argument(
+        '--start', help='choose either "latest" or "earliest to select the messages to receive"')
+    args = parser.parse_args()
+
+
+def generate_integer():
+    return randint(0, 100)
+
+
+def generate_name():
+    return Faker('en_US').name()
 
 
 def run_producer(serverName, channelName):
@@ -30,7 +40,7 @@ def run_producer(serverName, channelName):
 
     #msg_value = args.send
     for i in range(0, 100):
-        msg_value = {'id': randint(0, 100), 'name': Faker('en_US').name()}
+        msg_value = {'id': generate_integer(), 'name': generate_name()}
     while True:
         try:
             # p.poll(timeout=0)
@@ -39,6 +49,7 @@ def run_producer(serverName, channelName):
             break
         except BufferError as buffer_error:
             print(f"{buffer_error} :: waiting until the Queue gets some free space")
+
     p.flush()
     return msg_value
 
