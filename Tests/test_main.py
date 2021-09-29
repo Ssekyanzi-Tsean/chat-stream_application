@@ -39,22 +39,37 @@ def test_delivery_report_on_error():
 
 
 # @pytest.mark.skip(reason='')
-@mock.patch('app.main.KafkaException')
 @mock.patch('app.main.Consumer')
-def test_run_consumer(ConsumerMock, KafkaExMock,):
+def test_run_consumer(ConsumerMock):
     """Testing the Consumer Function"""
-    from app.main import Consumer
-    from confluent_kafka import KafkaException
     # Prepare
-    severName = 'localhost:9092'
+    serverName = 'localhost:9092'
     groupId = 'chatgroup-1'
     offset = 'beginning'
     channelName = 'messages-1'
-    SubscribeMock = channelName
-    kafka_err = Mock()
-    kafka_err.side_effect = Exception('KafkaExecption')
+    msg_value = "Hello There"
+
+    class Message:
+        def error(self):
+            print("error has been called")
+
+        def values(self):
+            return {"name": "stop"}
+
+    class Consumer:
+        def subscribe(self, channels):
+            print(channels)
+
+        def poll(self, timeout=1.0):
+            return Message()
+
+        def close(self):
+            pass
+
+    ConsumerMock.return_value = Consumer()
+
     # Test
-    build = run_consumer(severName, groupId, offset, channelName)
+    build = run_consumer(serverName, groupId, offset, channelName)
+
     # Assertion
-    assert build == ''
-    kafka_err.assert_called()
+    assert build == {"name": "stop"}

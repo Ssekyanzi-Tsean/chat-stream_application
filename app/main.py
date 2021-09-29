@@ -72,17 +72,20 @@ def run_consumer(severName, groupId, offset, channelName):
     try:
         while True:
             msg = c.poll(timeout=1.0)
-
+            print(msg)
             if msg is None:
                 print('No New Messages')
                 continue
             if msg.error():
                 raise KafkaException(msg.error())
             else:
-                print(msg.value())
+                msg_value = msg.values()
+                print(msg_value)
+                if msg_value["name"] == "stop":
+                    break
 
     except KeyboardInterrupt:
         print("Aborted by user")
     finally:
         c.close()
-    return (msg.value)
+    return msg_value
